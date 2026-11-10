@@ -1,0 +1,22 @@
+name: Heed
+description: Comment on pull requests that match rules learned from your repository's own history
+author: Creste LLC
+branding:
+  icon: git-pull-request
+  color: orange
+inputs:
+  github-token:
+    description: GitHub token used to read the pull request and write comments
+    default: ${{ github.token }}
+  rules-file:
+    description: Path to the committed Heed rules file, relative to the workspace
+    default: .heed/rules.json
+runs:
+  using: composite
+  steps:
+    - uses: oven-sh/setup-bun@v2
+    - run: bun "$GITHUB_ACTION_PATH/dist/main.js"
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+        HEED_RULES: ${{ inputs.rules-file }}
+      shell: bash
