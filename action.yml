@@ -11,6 +11,24 @@ inputs:
   rules-file:
     description: Path to the committed Heed rules file, relative to the workspace
     default: .heed/rules.json
+  min-rules:
+    description: Minimum matched rules required before Heed reports a match
+    default: ""
+  min-lift:
+    description: Minimum rule lift to report
+    default: ""
+  max-inline:
+    description: Maximum inline comments, capped at 10
+    default: ""
+  inline:
+    description: Whether to create inline comments
+    default: ""
+  check:
+    description: Whether to publish a Heed check run
+    default: ""
+  fail-on-match:
+    description: Fail the job when rules match above the threshold
+    default: ""
 runs:
   using: composite
   steps:
@@ -19,4 +37,10 @@ runs:
       env:
         GITHUB_TOKEN: ${{ inputs.github-token }}
         HEED_RULES: ${{ inputs.rules-file }}
+        HEED_MIN_RULES: ${{ inputs.min-rules }}
+        HEED_MIN_LIFT: ${{ inputs.min-lift }}
+        HEED_MAX_INLINE: ${{ inputs.max-inline }}
+        HEED_INLINE: ${{ inputs.inline }}
+        HEED_CHECK: ${{ inputs.check }}
+        HEED_FAIL_ON_MATCH: ${{ inputs.fail-on-match }}
       shell: bash
