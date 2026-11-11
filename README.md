@@ -1,6 +1,6 @@
 # Heed GitHub Action
 
-Heed comments on pull requests that match rules learned from your repository's own merged-PR history. Each rule includes evidence: how often matching past pull requests needed a follow-up fix or revert within 14 days compared with the repository's rate, plus linked example pull requests.
+Heed comments on pull requests that match rules learned from your repository's own merged-PR history. Each rule includes evidence: how often matching past pull requests needed a follow-up fix or revert compared with the repository's rate, plus linked example pull requests.
 
 ## Install (about 5 minutes)
 
@@ -105,7 +105,7 @@ Every summary comment, check run and step summary ends with a line such as `Rule
 
 ## Refreshing rules monthly
 
-Rules are rebuilt by `heed init`, which is part of the licensed Heed CLI, not this Action. The CLI mines PR history with `git` and `gh`, so it is not bundled here; this Action never runs a subprocess. If you have a Heed licence, the workflow below rebuilds `.heed/rules.json` once a month (or on demand) and opens a pull request with the result. It never pushes to the default branch, so the new rules go through review like any other change.
+Rules are rebuilt by `heed init`, which is part of the licensed Heed CLI, not this Action. The CLI reads PR history with `git` and `gh`, so it is not bundled here; this Action never runs a subprocess. If you have a Heed licence, the workflow below rebuilds `.heed/rules.json` once a month (or on demand) and opens a pull request with the result. It never pushes to the default branch, so the new rules go through review like any other change.
 
 Save it as `.github/workflows/heed-refresh.yml`. It downloads the Linux `heed` binary from the link in your licence (store the link as the `HEED_CLI_URL` secret and its SHA-256 as `HEED_CLI_SHA256`). On a self-hosted runner that already has `heed` on `PATH`, drop the download step.
 
