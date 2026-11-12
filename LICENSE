@@ -1,7 +1,7 @@
-HEED GITHUB ACTION LICENSE
+PRECALL GITHUB ACTION LICENSE
 Version 2026-11-11
 
-This license is between you and Creste LLC, a Washington limited liability company ("Creste", "we"). It covers the Heed GitHub Action: the files in the Frostn1/heed-action repository, including action.yml and dist/main.js (the "Action"). By using the Action in a workflow, you agree to this license. If you use it for a company or other organisation, you agree for it and confirm you are allowed to.
+This license is between you and Creste LLC, a Washington limited liability company ("Creste", "we"). It covers the Precall GitHub Action: the files in the Frostn1/heed-action repository, including action.yml and dist/main.js (the "Action"). By using the Action in a workflow, you agree to this license. If you use it for a company or other organisation, you agree for it and confirm you are allowed to.
 
 1. What you may do
 You may use the Action free of charge in GitHub Actions workflows for repositories you own or are allowed to work on, including private and commercial repositories. GitHub may copy the Action onto its runners to run it. You may fork the repository on GitHub, as GitHub's terms allow, only to use the Action in your own workflows.
@@ -31,5 +31,5 @@ The license ends if you break it. You can end it at any time by removing the Act
 8. Changes and governing law
 We may publish a new version of this license with a new release of the Action. The license included with a release applies to that release. The laws of the State of Washington, USA govern this license, and the state and federal courts in Washington have exclusive jurisdiction over any dispute about it.
 
-Questions: https://heed-site.aui-svi.workers.dev
+Questions: https://tryprecall.com
 (c) Creste LLC. All rights reserved.

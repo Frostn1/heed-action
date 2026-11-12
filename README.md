@@ -1,15 +1,15 @@
-# Heed GitHub Action
+# Precall GitHub Action
 
-Heed comments on pull requests that match rules learned from your repository's own merged-PR history. Each rule includes evidence: how often matching past pull requests needed a follow-up fix or revert compared with the repository's rate, plus linked example pull requests.
+Precall comments on pull requests that match rules learned from your repository's own merged-PR history. Each rule shows how many earlier pull requests that changed the same code needed a fix, with linked examples.
 
 ## Install (about 5 minutes)
 
-1. Get the Heed CLI. The Heed CLI is not public yet. Request access at https://heed-site.aui-svi.workers.dev to get it.
+1. Get the Precall CLI. The Precall CLI is not public yet. Request access at https://tryprecall.com to get it.
 2. In a local checkout of your repository, run `heed init .` (it reads pull request history through the `gh` CLI, so run `gh auth login` first). It writes `.heed/rules.json` with only the rules that have enough evidence, and prints each one with its counts. Commit that file. Re-run it every month or two to refresh the rules.
-3. Add `.github/workflows/heed.yml`:
+3. Add `.github/workflows/precall.yml`:
 
 ```yaml
-name: Heed
+name: Precall
 on:
   pull_request:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -19,7 +19,7 @@ permissions:
   contents: read
   pull-requests: write
 jobs:
-  heed:
+  precall:
     if: (github.event_name != 'issue_comment' && github.event.pull_request.draft == false) || (github.event.issue.pull_request && startsWith(github.event.comment.body, '/heed'))
     runs-on: ubuntu-latest
     steps:
@@ -35,7 +35,7 @@ jobs:
 Use `pull_request_target` when the repository accepts PRs from forks:
 
 ```yaml
-name: Heed
+name: Precall
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -45,18 +45,18 @@ permissions:
   contents: read
   pull-requests: write
 jobs:
-  heed:
+  precall:
     if: (github.event_name != 'issue_comment' && github.event.pull_request.draft == false) || (github.event.issue.pull_request && startsWith(github.event.comment.body, '/heed'))
     runs-on: ubuntu-latest
     steps:
       - uses: Frostn1/heed-action@v1
 ```
 
-No checkout step is needed. Under `pull_request_target`, Heed reads `.heed/rules.json` from the base branch through the API, so a fork cannot swap in its own rules. This is safe because Heed only reads the PR through the GitHub API and never runs code from the PR.
+No checkout step is needed. Under `pull_request_target`, Precall reads `.heed/rules.json` from the base branch through the API, so a fork cannot swap in its own rules. This is safe because Precall only reads the PR through the GitHub API and never runs code from the PR.
 
 An `issue_comment` run also reads through the GitHub API: it never checks out or runs PR code.
 
-Do not add steps that check out the PR head (for example, `actions/checkout` with `ref: ${{ github.event.pull_request.head.sha }}`) or run its code in the same job, since that job has a write token. Heed needs only `contents: read` and `pull-requests: write`, which also covers replies to `/heed` commands. Add `checks: write` only if you turn on check output.
+Do not add steps that check out the PR head (for example, `actions/checkout` with `ref: ${{ github.event.pull_request.head.sha }}`) or run its code in the same job, since that job has a write token. Precall needs only `contents: read` and `pull-requests: write`, which also covers replies to `/heed` commands. Add `checks: write` only if you turn on check output.
 
 Keep the `pull_request` workflow above for private repositories. Under `pull_request`, a fork PR falls back to the step summary; under `pull_request_target`, it comments normally.
 
@@ -67,11 +67,17 @@ Keep the `pull_request` workflow above for private repositories. Under `pull_req
 | `rules-file` | `.heed/rules.json` | Path to the committed rules file, relative to the repository root |
 | `github-token` | `${{ github.token }}` | Token used to read the pull request and write comments |
 | `min-rules` | `1` | Minimum number of filtered matches required to report |
-| `min-lift` | `0` | Ignore rules below this lift |
+| `min-lift` | `0` | Ignore rules below this strength |
 | `max-inline` | `5` | Maximum inline notes (hard cap 10) |
 | `inline` | `true` | Enable inline notes |
-| `check` | `false` | Publish a Heed check run |
+| `check` | `false` | Publish a Precall check run |
 | `fail-on-match` | `false` | Fail the job when matches meet the threshold |
+
+## How quiet
+
+The Action comments at the default level: every change that matches a rule learned from your repository. The quieter High level, which comments only on the riskiest changes, is available in the hosted Precall app (repository or account settings), not in the Action.
+
+PR-size notes ("this PR is large") show by default. To turn them off, set `showSizeRules` to `false` in `.heed/config.json` (below).
 
 ## Repository config (.heed/config.json)
 
@@ -80,9 +86,9 @@ Commit optional repository defaults on the base branch:
 ```json
 {
   "minRules": 2,
-  "minLift": 1.5,
   "maxInline": 3,
   "inline": true,
+  "showSizeRules": false,
   "muted": ["learned.risk.example"]
 }
 ```
@@ -91,7 +97,7 @@ Precedence is Action input, then `.heed/config.json` on the base branch, then th
 
 ## Muting a rule
 
-An OWNER, MEMBER, or COLLABORATOR can comment `/heed ignore <rule-id>`, or reply `/heed ignore` to an inline Heed note. Mutes are recomputed from authorized comments every run; delete the command comment to unmute. `/heed ignore-repo <rule-id>` replies with instructions for adding the id to `muted` in `.heed/config.json`; Heed never edits files.
+An OWNER, MEMBER, or COLLABORATOR can comment `/heed ignore <rule-id>`, or reply `/heed ignore` to an inline Precall note. Mutes are recomputed from authorized comments every run; delete the command comment to unmute. `/heed ignore-repo <rule-id>` replies with instructions for adding the id to `muted` in `.heed/config.json`; Precall never edits files.
 
 A mute applies right away when the workflow listens to `issue_comment` (see the examples above), otherwise on the next push. A reply to an inline note applies on the next push or `/heed` comment. Rule ids are the `id` fields in `.heed/rules.json`. The summary then says, for example, `1 rule(s) muted on this PR by @name`, written so it does not notify that person.
 
@@ -105,12 +111,12 @@ Every summary comment, check run and step summary ends with a line such as `Rule
 
 ## Refreshing rules monthly
 
-Rules are rebuilt by `heed init`, which is part of the licensed Heed CLI, not this Action. The CLI reads PR history with `git` and `gh`, so it is not bundled here; this Action never runs a subprocess. If you have a Heed licence, the workflow below rebuilds `.heed/rules.json` once a month (or on demand) and opens a pull request with the result. It never pushes to the default branch, so the new rules go through review like any other change.
+Rules are rebuilt by `heed init`, which is part of the licensed Precall CLI, not this Action. The CLI reads PR history with `git` and `gh`, so it is not bundled here; this Action never runs a subprocess. If you have a Precall licence, the workflow below rebuilds `.heed/rules.json` once a month (or on demand) and opens a pull request with the result. It never pushes to the default branch, so the new rules go through review like any other change.
 
-Save it as `.github/workflows/heed-refresh.yml`. It downloads the Linux `heed` binary from the link in your licence (store the link as the `HEED_CLI_URL` secret and its SHA-256 as `HEED_CLI_SHA256`). On a self-hosted runner that already has `heed` on `PATH`, drop the download step.
+Save it as `.github/workflows/precall-refresh.yml`. It downloads the Linux `heed` binary from the link in your licence (store the link as the `HEED_CLI_URL` secret and its SHA-256 as `HEED_CLI_SHA256`). On a self-hosted runner that already has `heed` on `PATH`, drop the download step.
 
 ```yaml
-name: Heed rules refresh
+name: Precall rules refresh
 on:
   schedule:
     - cron: "0 6 1 * *" # 06:00 UTC on the 1st of each month
@@ -125,7 +131,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install the Heed CLI
+      - name: Install the Precall CLI
         env:
           HEED_CLI_URL: ${{ secrets.HEED_CLI_URL }}
           HEED_CLI_SHA256: ${{ secrets.HEED_CLI_SHA256 }}
@@ -140,10 +146,10 @@ jobs:
         run: heed init . --repo "${{ github.repository }}"
       - uses: peter-evans/create-pull-request@v7
         with:
-          branch: heed/refresh-rules
+          branch: precall/refresh-rules
           add-paths: .heed/rules.json
-          commit-message: "chore: refresh Heed rules"
-          title: "chore: refresh Heed rules"
+          commit-message: "chore: refresh Precall rules"
+          title: "chore: refresh Precall rules"
           body: Monthly `heed init` run. Review the rule changes before merging.
 ```
 
@@ -151,8 +157,8 @@ Allow GitHub Actions to create pull requests (Settings -> Actions -> General -> 
 
 ## What it does not do
 
-Your code is read only on the GitHub Actions runner and is never sent anywhere else. The action's own code makes no network calls except to the GitHub API (`GITHUB_API_URL`, default `https://api.github.com`) using the workflow token. The `oven-sh/setup-bun` step downloads the Bun runtime before the action runs. Heed does not change code, push commits, or approve pull requests, and it never blocks a merge unless you set `fail-on-match: true`.
+Your code is read only on the GitHub Actions runner and is never sent anywhere else. The action's own code makes no network calls except to the GitHub API (`GITHUB_API_URL`, default `https://api.github.com`) using the workflow token. The `oven-sh/setup-bun` step downloads the Bun runtime before the action runs. Precall does not change code, push commits, or approve pull requests, and it never blocks a merge unless you set `fail-on-match: true`.
 
 ## License
 
-Free to use under the Heed GitHub Action license in LICENSE. Proprietary; (c) Creste LLC.
+Free to use under the Precall GitHub Action license in LICENSE. Proprietary; (c) Creste LLC.

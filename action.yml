@@ -1,4 +1,4 @@
-name: Heed
+name: Precall
 description: Comment on pull requests that match rules learned from your repository's own history
 author: Creste LLC
 branding:
@@ -9,13 +9,13 @@ inputs:
     description: GitHub token used to read the pull request and write comments
     default: ${{ github.token }}
   rules-file:
-    description: Path to the committed Heed rules file, relative to the workspace
+    description: Path to the committed Precall rules file, relative to the workspace
     default: .heed/rules.json
   min-rules:
-    description: Minimum matched rules required before Heed reports a match
+    description: Minimum breached rules required before Precall reports
     default: ""
   min-lift:
-    description: Minimum rule lift to report
+    description: Minimum rule strength to report
     default: ""
   max-inline:
     description: Maximum inline comments, capped at 10
@@ -24,7 +24,7 @@ inputs:
     description: Whether to create inline comments
     default: ""
   check:
-    description: Whether to publish a Heed check run
+    description: Whether to publish a Precall check run
     default: ""
   fail-on-match:
     description: Fail the job when rules match above the threshold
